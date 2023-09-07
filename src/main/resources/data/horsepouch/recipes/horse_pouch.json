@@ -1,0 +1,22 @@
+{
+	"type": "minecraft:crafting_shaped",
+	"pattern": [
+		"S#S",
+		"#D#",
+		"###"
+	],
+	"key": {
+		"D": {
+			"item": "minecraft:dispenser"
+		},
+		"S": {
+			"item": "minecraft:string"
+		},
+		"#": {
+			"item": "minecraft:leather"
+		}
+	},
+	"result": {
+		"item": "horsepouch:horse_pouch"
+	}
+}
