@@ -3,42 +3,45 @@ package com.mactso.horsepouch;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.mactso.horsepouch.config.MyConfig;
-import com.mactso.horsepouch.items.ModItems;
-import com.mactso.horsepouch.utility.Utility;
+import com.mactso.horsepouch.proxy.CommonProxy;
+import com.mactso.horsepouch.util.Reference;
 
-import net.minecraft.item.Item;
-import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.common.Mod.EventHandler;
+import net.minecraftforge.fml.common.Mod.Instance;
+import net.minecraftforge.fml.common.SidedProxy;
+import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 
-@Mod("horsepouch")
+@Mod(modid = Reference.MOD_ID, name = Reference.NAME, version = Reference.VERSION)
 public class Main {
 
-	    public static final String MODID = "horsepouch"; 
-		private static final Logger LOGGER = LogManager.getLogger();
-	    
-	    public Main()
-	    {
-	    	Utility.debugMsg(0,MODID + ": Registering Mod.");
-	  		FMLJavaModLoadingContext.get().getModEventBus().register(this);
- 	        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON,MyConfig.COMMON_SPEC );
-			
-	    }
+	private static final Logger LOGGER = LogManager.getLogger();
 
-	    @Mod.EventBusSubscriber(bus=Mod.EventBusSubscriber.Bus.MOD)
-	    public static class ModEvents
-	    {
-	    	@SubscribeEvent
-	    	public static void onItemsRegistry(final RegistryEvent.Register<Item> event)
-	    	{
-	    		ModItems.register(event.getRegistry());
-	    	}
-	    
-	    }
+	@Instance
+	public static Main instance;
+
+	@SidedProxy(clientSide = Reference.CLIENT_PROXY_CLASS, serverSide = Reference.COMMON_PROXY_CLASS)
+	public static CommonProxy proxy;
+
+	@EventHandler
+	private static void PreInit(FMLPreInitializationEvent event) {
+		
+	}
+
+	@EventHandler
+	private static void init(FMLInitializationEvent event) {
+		
+	}
+	
+	@EventHandler
+	private static void Postinit(FMLPostInitializationEvent event) {
+		
+	}
+	
+	public Main() {
+		LOGGER.info( " Horsepouch 1.12.2 Startup" );
+	}
 
 }
-

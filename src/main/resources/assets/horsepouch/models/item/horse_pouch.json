@@ -1,6 +1,6 @@
 {
   "parent": "item/generated",
   "textures": {
-    "layer0": "horsepouch:item/horse_pouch"
+    "layer0": "horsepouch:items/horse_pouch"
   }
-}
+} 

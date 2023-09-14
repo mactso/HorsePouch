@@ -6,5 +6,11 @@
 /bin/
 /run/
 /build/
+/.project/
+/.classpath/
+/.gradle/
+/HarderBranchMining_Client.launch
+/HarderBranchMining_Server.launch
+/.classpath
 /.project
 /*.launch

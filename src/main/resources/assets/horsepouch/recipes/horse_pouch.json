@@ -17,6 +17,7 @@
 		}
 	},
 	"result": {
-		"item": "horsepouch:horse_pouch"
+		"item": "horsepouch:horse_pouch",
+		"count" : 1
 	}
 }

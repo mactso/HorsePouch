@@ -1,0 +1,16 @@
+[
+{
+  "modid": "horsepouch",
+  "name": "Horse Pouch",
+  "description": "Horse Pouch 1.0 for 1.12.2",
+  "version": "1.0.0",
+  "mcversion": "1.12.2",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["MacTso","Lupicus"],
+  "credits": "",
+  "logoFile": "Logo.png",
+  "screenshots": [],
+  "dependencies": []
+}
+]
