@@ -1,24 +1,24 @@
 modLoader="javafml"
-loaderVersion="[36,)"
+loaderVersion="[39,)"
 license="MIT License"
 [[mods]]
 modId="horsepouch"
 version="${file.jarVersion}"
-displayName="horsepouch"
+displayName="Horse Pouch Mod"
 displayURL="https://www.curseforge.com/minecraft/mc-mods/horsepouch"
 logoFile="Logo.png"
 authors="MacTso, Lupicus"
-description='Horse Pouch.'
+description='Horse Pouch Mod.'
 [[dependencies.horsepouch]]
     modId="forge"
     mandatory=true
-    versionRange="[36,)"
+    versionRange="[39,)"
     ordering="NONE"
     side="SERVER"
 
 [[dependencies.horsepouch]]
     modId="minecraft"
     mandatory=true
-    versionRange="[1.16.5,1.17.0)"
+    versionRange="[1.18.1,1.19)"
     ordering="NONE"
     side="SERVER"
