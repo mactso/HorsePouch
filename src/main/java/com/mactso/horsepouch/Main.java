@@ -7,7 +7,7 @@ import com.mactso.horsepouch.config.MyConfig;
 import com.mactso.horsepouch.items.ModItems;
 import com.mactso.horsepouch.utility.Utility;
 
-import net.minecraft.item.Item;
+import net.minecraft.world.item.Item;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModLoadingContext;

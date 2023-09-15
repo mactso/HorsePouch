@@ -8,32 +8,33 @@ import org.apache.logging.log4j.Logger;
 import com.mactso.horsepouch.config.MyConfig;
 import com.mactso.horsepouch.utility.Utility;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.entity.passive.horse.HorseEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUseContext;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Direction;
-import net.minecraft.util.Hand;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvents;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.Color;
-import net.minecraft.util.text.IFormattableTextComponent;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.TextColor;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.Entity.RemovalReason;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.animal.horse.Horse;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 
 public class HorsePouchItem extends Item {
 	private static final Logger LOGGER = LogManager.getLogger();
@@ -43,79 +44,77 @@ public class HorsePouchItem extends Item {
 	}
 
 	@Override
-	public ActionResultType interactLivingEntity(ItemStack itemStack, PlayerEntity player, LivingEntity entity,
-			Hand hand) {
+	public InteractionResult interactLivingEntity(ItemStack itemStack, Player player, LivingEntity entity,
+			InteractionHand hand) {
 
-		World world = player.level;
+		Level world = player.level;
 
 		if (world.isClientSide) {
-			return ActionResultType.PASS;
+			return InteractionResult.PASS;
 		}
 
 		Utility.debugMsg(1, "Horse Pouch Storing Horse");
-		if (!(entity instanceof HorseEntity)) {
-			return ActionResultType.PASS;
+		if (!(entity instanceof Horse)) {
+			return InteractionResult.PASS;
 		}
 
-		HorseEntity targetHorse = (HorseEntity) entity;
+		Horse targetHorse = (Horse) entity;
 
 		if ((MyConfig.isMustBeOwner()) && (!player.getUUID().equals(targetHorse.getOwnerUUID()))) {
-			return ActionResultType.PASS;
+			return InteractionResult.PASS;
 		}
 
 		if ((MyConfig.isMustBeSaddled()) && !(targetHorse.isSaddled())) {
-			return ActionResultType.PASS;
+			return InteractionResult.PASS;
 		}
 
 		targetHorse.ejectPassengers();
-		CompoundNBT entityData = entity.serializeNBT();
+		CompoundTag entityData = entity.serializeNBT();
 		entityData.remove("Pos");
 		entityData.remove("UUID");
 		// entityData.removeTag("Dimension"); was in 12.
 		itemStack.getOrCreateTag().put("StoredEntityData", entityData);
-		entity.remove();
+		entity.remove(RemovalReason.DISCARDED);
 
-		world.playSound(null, player.blockPosition(), SoundEvents.HORSE_ARMOR, SoundCategory.PLAYERS, 1.0F, 1.0F);
-		return ActionResultType.CONSUME;
+		world.playSound(null, player.blockPosition(), SoundEvents.HORSE_ARMOR, SoundSource.PLAYERS, 1.0F, 1.0F);
+		return InteractionResult.CONSUME;
 
 	}
 
 	@Override
-	public void appendHoverText(ItemStack itemStack, World world, List<ITextComponent> tiplist,
-			ITooltipFlag p_77624_4_) {
-
-		CompoundNBT nbtTag = itemStack.getTag(); // Correct method
+	public void appendHoverText(ItemStack itemStack, Level world, List<Component> tiplist, TooltipFlag p_41424_) {
+		CompoundTag nbtTag = itemStack.getTag(); // Correct method
 
 		if ((nbtTag == null) || (!(nbtTag.contains("StoredEntityData")))) {
-			tiplist.add(new StringTextComponent("Not holding a steed."));
+
+			tiplist.add(new TextComponent("Not holding a steed."));
 			return;
 		}
 
-		CompoundNBT entityData = nbtTag.getCompound("StoredEntityData");
+		CompoundTag entityData = nbtTag.getCompound("StoredEntityData");
 		EntityType<?> entityType = EntityType.byString(entityData.getString("id")).orElse(null);
-		StringTextComponent bagTip = new StringTextComponent(
-				"Holding a " + entityType.getRegistryName().getPath() + ".");
+		TextComponent bagTip = new TextComponent("Holding a " + entityType.getRegistryName().getPath() + ".");
 		if (entityData.contains("CustomName", 8)) {
-			IFormattableTextComponent name = new StringTextComponent(" ?Name? ");
+			MutableComponent name = new TextComponent(" ?Name? ");
 			try {
-				name = ITextComponent.Serializer.fromJson(entityData.getString("CustomName"));
+				name = TextComponent.Serializer.fromJson(entityData.getString("CustomName"));
 			} catch (Exception e) {
 				// failure to parse steed name isn't fatal.
 			}
-			bagTip = new StringTextComponent("Holding a " + entityType.getRegistryName().getPath() + " named ");
+			bagTip = new TextComponent("Holding a " + entityType.getRegistryName().getPath() + " named ");
 			bagTip.append(name);
 		}
 		tiplist.add(bagTip);
 	}
 
 	@Override
-	public ActionResultType useOn(ItemUseContext iuc) {
+	public InteractionResult useOn(UseOnContext iuc) {
 
-		World level = iuc.getLevel();
+		Level level = iuc.getLevel();
 		if (!level.isClientSide) {
-			World world = iuc.getLevel();
-			PlayerEntity player = iuc.getPlayer();
-			Hand hand = iuc.getHand();
+			Level world = iuc.getLevel();
+			Player player = iuc.getPlayer();
+			InteractionHand hand = iuc.getHand();
 			ItemStack itemStack = iuc.getItemInHand();
 			BlockPos blockpos = iuc.getClickedPos();
 			Direction direction = iuc.getClickedFace();
@@ -128,26 +127,26 @@ public class HorsePouchItem extends Item {
 				blockpos1 = blockpos.relative(direction);
 			}
 
-			CompoundNBT entityData = itemStack.getOrCreateTag().getCompound("StoredEntityData");
+			CompoundTag entityData = itemStack.getOrCreateTag().getCompound("StoredEntityData");
 			if (entityData.contains("id", 8)) {
 				Utility.debugMsg(1, "Restore Horse");
 				EntityType<?> entityType = EntityType.byString(entityData.getString("id")).orElse(null);
 				if (entityType != null) {
-					CompoundNBT newEntityData = new CompoundNBT();
+					CompoundTag newEntityData = new CompoundTag();
 					newEntityData.put("EntityTag", entityData);
-					Entity newEntity = entityType.create((ServerWorld) world, newEntityData, (ITextComponent) null,
-							(PlayerEntity) null, blockpos1, SpawnReason.MOB_SUMMONED, false, false);
+					Entity newEntity = entityType.create((ServerLevel) world, newEntityData, (Component) null,
+							(Player) null, blockpos1, MobSpawnType.MOB_SUMMONED, false, false);
 
 					// note: boolean returned by this is unreliable;
-					boolean bool = ((ServerWorld) world).addFreshEntity(newEntity);
+					boolean bool = ((Level) world).addFreshEntity(newEntity);
 					itemStack.getOrCreateTag().remove("StoredEntityData");
 
-					StringTextComponent component = new StringTextComponent("Your steed restored nearby.");
+					TextComponent component = new TextComponent("Your steed restored nearby.");
 					component.getStyle().withBold(true);
-					component.getStyle().withColor(Color.fromLegacyFormat(TextFormatting.DARK_GREEN));
+					component.getStyle().withColor(TextColor.fromLegacyFormat(ChatFormatting.DARK_GREEN));
 					player.sendMessage(component, player.getUUID());
 
-					return ActionResultType.CONSUME;
+					return InteractionResult.CONSUME;
 				}
 			}
 		}
@@ -155,39 +154,43 @@ public class HorsePouchItem extends Item {
 	}
 
 	@Override
-	public ActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
+	public InteractionResultHolder<ItemStack> use(Level world, Player player, InteractionHand hand) {
 
 		Utility.debugMsg(1, "Use HorsePouch");
 
-		if (!world.isClientSide) {
-			ItemStack itemStack = player.getItemInHand(hand);
-			CompoundNBT entityData = itemStack.getOrCreateTag().getCompound("StoredEntityData");
-			if (entityData.contains("id", 8)) {
-				Utility.debugMsg(1, "Restore Horse");
-
-				EntityType<?> entityType = EntityType.byString(entityData.getString("id")).orElse(null);
-				if (entityType != null) {
-					CompoundNBT newEntityData = new CompoundNBT();
-					newEntityData.put("EntityTag", entityData);
-					Entity newEntity = entityType.create((ServerWorld) world, newEntityData, (ITextComponent) null,
-							(PlayerEntity) null, player.blockPosition(), SpawnReason.MOB_SUMMONED, false, false);
-
-					// note: boolean returned by this is unreliable;
-					boolean bool = ((ServerWorld) world).addFreshEntity(newEntity);
-					int i = 4;
-					itemStack.getOrCreateTag().remove("StoredEntityData");
-
-					StringTextComponent component = new StringTextComponent("Your steed restored where you are.");
-					component.getStyle().withBold(true);
-					component.getStyle().withColor(Color.fromLegacyFormat(TextFormatting.DARK_GREEN));
-					player.sendMessage(component, player.getUUID());
-
-					return ActionResult.consume(itemStack);
-				}
-			}
-
+		if (world.isClientSide) {
+			return InteractionResultHolder.pass(player.getItemInHand(hand));
 		}
-		return ActionResult.pass(player.getItemInHand(hand));
+
+		ItemStack itemStack = player.getItemInHand(hand);
+		CompoundTag entityData = itemStack.getOrCreateTag().getCompound("StoredEntityData");
+
+		if (entityData.contains("id", 8)) {
+			Utility.debugMsg(1, "Restore Horse");
+			BlockPos blockpos = player.blockPosition();
+
+			EntityType<?> entityType = EntityType.byString(entityData.getString("id")).orElse(null);
+			if (entityType != null) {
+				CompoundTag newEntityData = new CompoundTag();
+				newEntityData.put("EntityTag", entityData);
+				Entity newEntity = entityType.create((ServerLevel) world, newEntityData, (Component) null,
+						(Player) null, blockpos, MobSpawnType.MOB_SUMMONED, false, false);
+
+				// note: boolean returned by this is unreliable;
+				boolean bool = ((Level) world).addFreshEntity(newEntity);
+				int i = 4;
+				itemStack.getOrCreateTag().remove("StoredEntityData");
+
+				TextComponent component = new TextComponent("Your steed restored where you are.");
+				component.getStyle().withBold(true);
+				component.getStyle().withColor(TextColor.fromLegacyFormat(ChatFormatting.DARK_GREEN));
+				player.sendMessage(component, player.getUUID());
+
+				return InteractionResultHolder.consume(itemStack);
+			}
+		}
+
+		return InteractionResultHolder.pass(player.getItemInHand(hand));
 
 	}
 
