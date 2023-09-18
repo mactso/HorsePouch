@@ -46,7 +46,7 @@ public class HorsePouchItem extends Item {
 	public InteractionResult interactLivingEntity(ItemStack itemStack, Player player, LivingEntity entity,
 			InteractionHand hand) {
 
-		Level world = player.level;
+		Level world = player.level();
 
 		if (world.isClientSide) {
 			return InteractionResult.PASS;
