@@ -134,7 +134,8 @@ public class HorsePouchItem extends Item {
 					CompoundTag newEntityData = new CompoundTag();
 					newEntityData.put("EntityTag", entityData);
 					Entity newEntity = entityType.create((ServerLevel) world, newEntityData, null, blockpos1, MobSpawnType.MOB_SUMMONED, false, false);
-
+					EntityType.updateCustomEntityTag(world, player, newEntity, newEntityData);
+					
 					// note: boolean returned by this is unreliable;
 					boolean bool = ((Level) world).addFreshEntity(newEntity);
 					itemStack.getOrCreateTag().remove("StoredEntityData");
@@ -172,10 +173,11 @@ public class HorsePouchItem extends Item {
 				CompoundTag newEntityData = new CompoundTag();
 				newEntityData.put("EntityTag", entityData);
 				Entity newEntity = entityType.create((ServerLevel) world, newEntityData, null, blockpos, MobSpawnType.MOB_SUMMONED, false, false);
-
+				EntityType.updateCustomEntityTag(world, player, newEntity, newEntityData);
+				
 				// note: boolean returned by this is unreliable;
 				boolean bool = ((Level) world).addFreshEntity(newEntity);
-				int i = 4;
+
 				itemStack.getOrCreateTag().remove("StoredEntityData");
 
 				Component component = Component.literal("Your steed restored where you are.");
