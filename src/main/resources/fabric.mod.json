@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "id": "horsepouch",
+  "version": "${version}",
+
+  "name": "Horse Pouch",
+  "description": "Store and Restore your Steed.",
+  "authors": [
+    "Mactso, Lupicus"
+  ],
+  "contact": {
+    "homepage": "https://www.curseforge.com/minecraft/mc-mods/horse-pouch",
+    "sources": "https://github.com/mactso/HorsePouch",
+    "issues": "https://github.com/mactso/HorsePouch/issues"
+  },
+
+  "license": "MIT License",
+  "icon": "assets/horsepouch/icon.png",
+
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.mactso.horsepouch.Main"
+    ]
+  },
+  "mixins": [
+    "horsepouch.mixins.json"
+  ],
+
+  "depends": {
+    "fabricloader": ">=0.14.21",
+    "fabric": "*",
+    "minecraft": "1.20.x",
+    "java": ">=17"
+  },
+  "suggests": {
+    "another-mod": "*"
+  }
+}

@@ -1,11 +1,5 @@
 {
 	"parent": "minecraft:recipes/root",
-	"requirements": [
-		[
-			"has_dispenser",
-			"has_leather"
-		]
-	],
 	"display": {
 		"icon": {
 			"item": "horsepouch:horse_pouch"
@@ -21,30 +15,35 @@
 		"announce_to_chat": false
 	},
 	"criteria": {
-		"has_dispenser": {
-			"trigger": "minecraft:inventory_changed",
-			"conditions": {
-				"items": [
-					{
-						"item": "minecraft:dispenser"
-					}
-				]
-			}
-		},
 		"has_leather": {
-			"trigger": "minecraft:inventory_changed",
 			"conditions": {
 				"items": [
 					{
-						"item": "minecraft:leather"
+						"items": [
+							"minecraft:leather"
+						]
 					}
 				]
-			}
+			},
+			"trigger": "minecraft:inventory_changed"
+		},
+		"has_the_recipe": {
+			"conditions": {
+				"recipe": "horsepouch:horse_pouch"
+			},
+			"trigger": "minecraft:recipe_unlocked"
 		}
 	},
+	"requirements": [
+		[
+			"has_leather",
+			"has_the_recipe"
+		]
+	],
 	"rewards": {
 		"recipes": [
 			"horsepouch:horse_pouch"
 		]
-	}
+	},
+	"sends_telemetry_event": false
 }

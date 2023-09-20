@@ -15,6 +15,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextColor;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -42,6 +43,17 @@ public class HorsePouchItem extends Item {
 		super(properties);
 	}
 
+	
+    public CompoundTag makeEntityNBT(LivingEntity entity)
+    {
+    	CompoundTag ret = new CompoundTag();
+        ResourceLocation resourceLocation = EntityType.getKey(entity.getType());
+        if (resourceLocation != null)         {
+            ret.putString("id", resourceLocation.toString());
+        }
+        return entity.saveWithoutId(ret);
+    }
+	
 	@Override
 	public InteractionResult interactLivingEntity(ItemStack itemStack, Player player, LivingEntity entity,
 			InteractionHand hand) {
@@ -68,7 +80,8 @@ public class HorsePouchItem extends Item {
 		}
 
 		targetHorse.ejectPassengers();
-		CompoundTag entityData = entity.serializeNBT();
+
+		CompoundTag entityData = makeEntityNBT(entity);
 		entityData.remove("Pos");
 		entityData.remove("UUID");
 		// entityData.removeTag("Dimension"); was in 12.
@@ -79,7 +92,8 @@ public class HorsePouchItem extends Item {
 		return InteractionResult.CONSUME;
 
 	}
-
+	
+    
 	@Override
 	public void appendHoverText(ItemStack itemStack, Level world, List<Component> tiplist, TooltipFlag p_41424_) {
 		CompoundTag nbtTag = itemStack.getTag(); // Correct method

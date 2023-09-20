@@ -1,34 +1,26 @@
 package com.mactso.horsepouch.config;
 
-import org.apache.commons.lang3.tuple.Pair;
+import java.io.IOException;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 
 import com.mactso.horsepouch.Main;
-import com.mactso.horsepouch.utility.Utility;
+import com.mojang.datafixers.util.Pair;
 
-import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.common.ForgeConfigSpec.BooleanValue;
-import net.minecraftforge.common.ForgeConfigSpec.IntValue;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.config.ModConfigEvent;
-
-
-
-@Mod.EventBusSubscriber(modid = Main.MODID, bus=Mod.EventBusSubscriber.Bus.MOD)
 public class MyConfig {
-	
-	public static final Common COMMON;
-	public static final ForgeConfigSpec COMMON_SPEC;
-	public static int TICKS_PER_MINUTE = 1200;
 
-	static
-	{
-		final Pair<Common, ForgeConfigSpec> specPair = new ForgeConfigSpec.Builder().configure(Common::new);
-		COMMON_SPEC = specPair.getRight();
-		COMMON = specPair.getLeft();
-	}	
-	
-	
+	private static final Logger LOGGER = LogManager.getLogger();
+	public static SimpleConfig CONFIG;
+	private static ModConfigProvider configs;
+
+	public static final Boolean BOLD = true;
+
+	private static int     debugLevel;
+	private static String mustBeOwner;
+	private static String mustBeSaddled;	
+
 	public static int getDebugLevel() {
 		return debugLevel;
 	}
@@ -37,79 +29,63 @@ public class MyConfig {
 		MyConfig.debugLevel = debugLevel;
 	}
 
-	public static int getRecipeDifficulty() {
-		return recipeDifficulty;
-	}
-
 	public static boolean isMustBeOwner() {
-		return mustBeOwner;
+		if (mustBeOwner.equals("true")) {
+			return true;
+		}
+		return false;
 	}
-
 	public static boolean isMustBeSaddled() {
-		return mustBeSaddled;
-	}
-
-	private static int     debugLevel;
-	private static int     recipeDifficulty;
-	private static boolean mustBeOwner;
-	private static boolean mustBeSaddled;		
-	
-	@SubscribeEvent
-	public static void onModConfigEvent(final ModConfigEvent configEvent)
-	{
-		if (configEvent.getConfig().getSpec() == MyConfig.COMMON_SPEC)
-		{
-			bakeConfig();
+		if (mustBeSaddled.equals("true")) {
+			return true;
 		}
-	}	
-
-	public static void pushDebugValue() {
-		Utility.debugMsg(1, "Happy Trails Debug Level:"+MyConfig.debugLevel);
-		COMMON.debugLevel.set( MyConfig.debugLevel);
+		return false;
 	}
 
-	public static void bakeConfig()
-	{
+
+	public static void registerConfigs() {
+		configs = new ModConfigProvider();
+		createConfigs();
+		CONFIG = SimpleConfig.of(Main.MOD_ID + "config").provider(configs).request();
+		assignConfigs();
+	}
+
+	private static void createConfigs() {
+		configs.addKeyValuePair(new Pair<>("key.debugLevel", 0), "int");
+		configs.addKeyValuePair(new Pair<>("key.mustbeowner", "true"), "String");
+		configs.addKeyValuePair(new Pair<>("key.mustbesaddled", "true"), "String");
+	}
+
+	private static void assignConfigs() {
+
+		debugLevel = CONFIG.getOrDefault("key.debugLevel", 0);
+		mustBeOwner = CONFIG.getOrDefault("key.mustbeowner", "true");
+		mustBeSaddled = CONFIG.getOrDefault("key.mustbesaddled", "true");
+		LOGGER.info("All " + configs.getConfigsList().size() + " have been set properly");
+	}
+
 	
-		
-		debugLevel = COMMON.debugLevel.get();
-		recipeDifficulty = COMMON.recipeDifficulty.get();
-		mustBeOwner = COMMON.mustBeOwner.get();
-		mustBeSaddled = COMMON.mustBeSaddled.get();
+	public static void diskSaveDebugValue() {
+		// don't save debug value from session to session.
+	}
 
-		if (debugLevel > 0) {
-			System.out.println("Horse Pouch Debug: " + debugLevel );
+	public static void diskSaveMustBeOwnerValue() {
+		String particlesOn = "false";
+		if (isMustBeOwner()) {
+			mustBeOwner = "true";
 		}
+		configs.setKeyValuePair("key.particleson", particlesOn);
+		CONFIG.diskSaveConfig();
+	}
+
+	public static void diskSaveMustBeSaddledValue() {
+		String particlesOn = "false";
+		if (isMustBeSaddled()) {
+			mustBeSaddled = "true";
+		}
+		configs.setKeyValuePair("key.particleson", particlesOn);
+		CONFIG.diskSaveConfig();
 	}
 	
-	public static class Common {
 
-		public final IntValue     	debugLevel;
-		public final IntValue     	recipeDifficulty;		
-		public final BooleanValue   mustBeOwner;
-		public final BooleanValue   mustBeSaddled;
-		
-		public Common(ForgeConfigSpec.Builder builder) {
-			builder.push("Happy Trail Control Values");
-			
-			debugLevel = builder
-					.comment("Debug Level: 0 = Off, 1 = Log, 2 = Chat+Log")
-					.translation(Main.MODID + ".config." + "debugLevel")
-					.defineInRange("debugLevel", () -> 0, 0, 2);
-
-			recipeDifficulty = builder
-					.comment("How difficult is recipe.")
-					.translation(Main.MODID + ".config." + "recipeDifficulty")
-					.defineInRange("recipeDifficulty", () -> 0, 0, 2);
-			
-			mustBeOwner = builder
-					.comment("Only Owner can store Horse, Donkey, or Mule.")
-		            .define("mustBeOwner", true);
-
-			mustBeSaddled = builder
-					.comment("The Steed must be saddled to be stored.")
-		            .define("mustBeSaddled", true);
-			builder.pop();			
-		}
-	}
 }
