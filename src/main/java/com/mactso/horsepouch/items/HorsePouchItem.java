@@ -15,6 +15,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextColor;
+import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -99,22 +100,21 @@ public class HorsePouchItem extends Item {
 		CompoundTag nbtTag = itemStack.getTag(); // Correct method
 
 		if ((nbtTag == null) || (!(nbtTag.contains("StoredEntityData")))) {
-			tiplist.add(Component.literal("Not holding a steed."));
+			tiplist.add(new TextComponent("Not holding a steed."));
 			return;
 		}
 
 		CompoundTag entityData = nbtTag.getCompound("StoredEntityData");
 		EntityType<?> entityType = EntityType.byString(entityData.getString("id")).orElse(null);
-		String description = entityType.builtInRegistryHolder().key().location().getPath();
-		MutableComponent bagTip = Component.literal("Holding a " + description + ".");
+		TextComponent bagTip = new TextComponent("Holding a " + entityType.builtInRegistryHolder().key().location().getPath() + ".");
 		if (entityData.contains("CustomName", 8)) {
-			MutableComponent name = Component.literal(" ?Name? ");
+			MutableComponent name = new TextComponent(" ?Name? ");
 			try {
 				name = Component.Serializer.fromJson(entityData.getString("CustomName"));
 			} catch (Exception e) {
 				// failure to parse steed name isn't fatal.
 			}
-			bagTip = Component.literal("Holding a " + description + " named ");
+			bagTip = new TextComponent("Holding a " + entityType.builtInRegistryHolder().key().location().getPath() + " named ");
 			bagTip.append(name);
 		}
 		tiplist.add(bagTip);
@@ -147,17 +147,18 @@ public class HorsePouchItem extends Item {
 				if (entityType != null) {
 					CompoundTag newEntityData = new CompoundTag();
 					newEntityData.put("EntityTag", entityData);
-					Entity newEntity = entityType.create((ServerLevel) world, newEntityData, null, blockpos1, MobSpawnType.MOB_SUMMONED, false, false);
+					Entity newEntity = entityType.create((ServerLevel) world, newEntityData, (Component) null,
+							(Player) null, blockpos1, MobSpawnType.MOB_SUMMONED, false, false);
 					EntityType.updateCustomEntityTag(world, player, newEntity, newEntityData);
 					
 					// note: boolean returned by this is unreliable;
 					boolean bool = ((Level) world).addFreshEntity(newEntity);
 					itemStack.getOrCreateTag().remove("StoredEntityData");
 
-					Component component = Component.literal("Your steed restored nearby.");
+					TextComponent component = new TextComponent("Your steed restored nearby.");
 					component.getStyle().withBold(false);
 					component.getStyle().withColor(TextColor.fromLegacyFormat(ChatFormatting.DARK_GREEN));
-					player.sendSystemMessage(component);
+					player.sendMessage(component, player.getUUID());
 
 					return InteractionResult.CONSUME;
 				}
@@ -186,18 +187,18 @@ public class HorsePouchItem extends Item {
 			if (entityType != null) {
 				CompoundTag newEntityData = new CompoundTag();
 				newEntityData.put("EntityTag", entityData);
-				Entity newEntity = entityType.create((ServerLevel) world, newEntityData, null, blockpos, MobSpawnType.MOB_SUMMONED, false, false);
-				EntityType.updateCustomEntityTag(world, player, newEntity, newEntityData);
-				
+				Entity newEntity = entityType.create((ServerLevel) world, newEntityData, (Component) null,
+						(Player) null, blockpos, MobSpawnType.MOB_SUMMONED, false, false);
+
 				// note: boolean returned by this is unreliable;
 				boolean bool = ((Level) world).addFreshEntity(newEntity);
 
 				itemStack.getOrCreateTag().remove("StoredEntityData");
 
-				Component component = Component.literal("Your steed restored where you are.");
+				TextComponent component = new TextComponent("Your steed restored where you are.");
 				component.getStyle().withBold(false);
 				component.getStyle().withColor(TextColor.fromLegacyFormat(ChatFormatting.DARK_GREEN));
-				player.sendSystemMessage(component);
+				player.sendMessage(component, player.getUUID());
 
 				return InteractionResultHolder.consume(itemStack);
 			}

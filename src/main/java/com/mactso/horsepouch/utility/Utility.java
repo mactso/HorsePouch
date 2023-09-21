@@ -5,31 +5,30 @@ import org.apache.logging.log4j.Logger;
 
 import com.mactso.horsepouch.config.MyConfig;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.TextColor;
+import net.minecraft.network.chat.TextComponent;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.ChatFormatting;
 
 public class Utility {
 	
 	private static final Logger LOGGER = LogManager.getLogger();
 	
-	public static void sendBoldChat(Player p, String chatMessage, ChatFormatting textColor) {
-		MutableComponent component = Component.literal(chatMessage);
-		component.setStyle(component.getStyle().withBold(true));
-		component.setStyle(component.getStyle().withColor(textColor));
-		p.sendSystemMessage(component);
-
+	// support for any color chattext
+	public static void sendChat(Player p, String chatMessage, TextColor color) {
+		TextComponent component = new TextComponent (chatMessage);
+		component.getStyle().withColor(color);
+		p.sendMessage(component, p.getUUID());
 	}
+	
+	// support for any color, optionally bold text.
+	public static void sendBoldChat(Player p, String chatMessage, TextColor color) {
+		TextComponent component = new TextComponent (chatMessage);
 
-	public static void sendChat(Player p, String chatMessage, ChatFormatting textColor) {
-
-		MutableComponent component = Component.literal(chatMessage);
-		component.setStyle(component.getStyle().withColor(textColor));
-		p.sendSystemMessage(component);
-
+		component.getStyle().withBold(true);
+		component.getStyle().withColor(color);
+		p.sendMessage(component, p.getUUID());
 	}
 	
 	public static void debugMsg(int level, String dMsg) {
