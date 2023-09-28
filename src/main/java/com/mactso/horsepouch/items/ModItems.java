@@ -4,7 +4,6 @@ import com.mactso.horsepouch.Main;
 
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.core.Registry;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
@@ -21,15 +20,14 @@ public class ModItems {
 	}
 
 
-	private static Item registerItem(String name, Item item) {
-		
-		ResourceLocation resourceLocation = new ResourceLocation(Main.MOD_ID,name);
-
-		return Registry.register(
-				Registry.ITEM,
-				ResourceKey.create(Registry.ITEM.key(),
-				resourceLocation), item);
-	}
+//	private static Item registerItem(String name, Item item) {
+//		
+//		ResourceLocation resourceLocation = new ResourceLocation(Main.MOD_ID,name);
+//		return Registry.register(
+//				Registry.ITEM,
+//				resourceLocation.toString(),
+//				item);
+//	}
     
 	private static void register(String key, Item item)
 	{

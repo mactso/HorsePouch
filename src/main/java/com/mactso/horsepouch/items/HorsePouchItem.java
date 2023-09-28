@@ -24,7 +24,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.Entity.RemovalReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
@@ -87,7 +86,7 @@ public class HorsePouchItem extends Item {
 		entityData.remove("UUID");
 		// entityData.removeTag("Dimension"); was in 12.
 		itemStack.getOrCreateTag().put("StoredEntityData", entityData);
-		entity.remove(RemovalReason.DISCARDED);
+		entity.remove();
 
 		world.playSound(null, player.blockPosition(), SoundEvents.HORSE_ARMOR, SoundSource.PLAYERS, 1.0F, 1.0F);
 		return InteractionResult.CONSUME;
@@ -106,7 +105,8 @@ public class HorsePouchItem extends Item {
 
 		CompoundTag entityData = nbtTag.getCompound("StoredEntityData");
 		EntityType<?> entityType = EntityType.byString(entityData.getString("id")).orElse(null);
-		TextComponent bagTip = new TextComponent("Holding a " + entityType.builtInRegistryHolder().key().location().getPath() + ".");
+		TextComponent bagTip = new TextComponent(
+				"Holding a " + EntityType.getKey(entityType).getPath() + ".");
 		if (entityData.contains("CustomName", 8)) {
 			MutableComponent name = new TextComponent(" ?Name? ");
 			try {
@@ -114,7 +114,7 @@ public class HorsePouchItem extends Item {
 			} catch (Exception e) {
 				// failure to parse steed name isn't fatal.
 			}
-			bagTip = new TextComponent("Holding a " + entityType.builtInRegistryHolder().key().location().getPath() + " named ");
+			bagTip = new TextComponent("Holding a " + EntityType.getKey(entityType).getPath() + " named ");
 			bagTip.append(name);
 		}
 		tiplist.add(bagTip);
