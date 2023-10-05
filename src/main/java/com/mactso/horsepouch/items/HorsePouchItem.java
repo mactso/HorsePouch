@@ -165,8 +165,8 @@ public class HorsePouchItem extends Item {
 				if (entityType != null) {
 					CompoundTag newEntityData = new CompoundTag();
 					newEntityData.put("EntityTag", entityData);
-					Entity newEntity = entityType.create((ServerLevel) world, newEntityData, null, blockpos1, MobSpawnType.MOB_SUMMONED, false, false);
-					EntityType.updateCustomEntityTag(world, player, newEntity, newEntityData);
+					Entity newEntity = entityType.create((ServerLevel) world, newEntityData, (Component) null,
+							(Player) null, blockpos1, MobSpawnType.MOB_SUMMONED, false, false);
 
 					// note: boolean returned by this is unreliable;
 					boolean bool = ((Level) world).addFreshEntity(newEntity);
@@ -204,8 +204,8 @@ public class HorsePouchItem extends Item {
 			if (entityType != null) {
 				CompoundTag newEntityData = new CompoundTag();
 				newEntityData.put("EntityTag", entityData);
-				Entity newEntity = entityType.create((ServerLevel) world, newEntityData, null, blockpos, MobSpawnType.MOB_SUMMONED, false, false);
-				EntityType.updateCustomEntityTag(world, player, newEntity, newEntityData);
+				Entity newEntity = entityType.create((ServerLevel) world, newEntityData, (Component) null,
+						(Player) null, blockpos, MobSpawnType.MOB_SUMMONED, false, false);
 
 				// note: boolean returned by this is unreliable;
 				boolean bool = ((Level) world).addFreshEntity(newEntity);
