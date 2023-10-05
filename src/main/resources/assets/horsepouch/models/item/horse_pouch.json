@@ -1,6 +1,14 @@
 {
   "parent": "item/generated",
   "textures": {
-    "layer0": "horsepouch:item/horse_pouch"
-  }
+    "layer0": "horsepouch:item/horse_pouch_empty"
+  },
+      "overrides": [
+        {
+            "predicate": {
+                "horsepouch:full": 1
+            },
+            "model": "horsepouch:item/horse_pouch_full"
+        }
+    ]
 }
