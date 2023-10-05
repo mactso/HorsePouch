@@ -9,6 +9,7 @@ import com.mactso.horsepouch.config.MyConfig;
 import com.mactso.horsepouch.utility.Utility;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -26,7 +27,7 @@ import net.minecraft.world.entity.Entity.RemovalReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.entity.animal.horse.Horse;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -34,38 +35,68 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 public class HorsePouchItem extends Item {
 	private static final Logger LOGGER = LogManager.getLogger();
 
+	
 	public HorsePouchItem(Properties properties) {
 		super(properties);
-	}
 
+	}
+	
+	// this method is only client side.
+	@OnlyIn(Dist.CLIENT)	
+	public static float bagModel (ItemStack itemStackIn, ClientLevel level, LivingEntity le, int i) {
+		if (itemStackIn.getTagElement("StoredEntityData") != null) {
+			return 1;  // bag full of horse
+		}
+		return 0;  // bag empty
+	}
+	
 	@Override
-	public InteractionResult interactLivingEntity(ItemStack itemStack, Player player, LivingEntity entity,
+	public InteractionResult interactLivingEntity(ItemStack itemStackIn, Player player, LivingEntity entity,
 			InteractionHand hand) {
 
 		Level world = player.level;
 
 		if (world.isClientSide) {
-			return InteractionResult.PASS;
+			return InteractionResult.SUCCESS;
+		}
+
+		if (!(entity instanceof AbstractHorse)) {
+			return InteractionResult.CONSUME;
+		}
+
+		AbstractHorse targetHorse = (AbstractHorse) entity;
+
+		// Prevent losing horse in Creative Mode.
+		ItemStack itemStack = player.getItemInHand(hand);
+		if (!itemStack.is(this)) {
+			return InteractionResult.CONSUME;
+		}
+
+		// check if horse in bag already
+		if (itemStack.getTagElement("StoredEntityData") != null) {
+			return InteractionResult.CONSUME;
+		}
+
+		if (!(targetHorse.isTamed())) {
+			return InteractionResult.CONSUME;
+		}
+
+	
+		if ((targetHorse.getOwnerUUID() != null) && (MyConfig.isMustBeOwner()) && (!player.getUUID().equals(targetHorse.getOwnerUUID()))) {
+			return InteractionResult.CONSUME;
+		}
+
+		if ((targetHorse.isSaddleable()) && (MyConfig.isMustBeSaddled()) && !(targetHorse.isSaddled())) {
+			return InteractionResult.CONSUME;
 		}
 
 		Utility.debugMsg(1, "Horse Pouch Storing Horse");
-		if (!(entity instanceof Horse)) {
-			return InteractionResult.PASS;
-		}
-
-		Horse targetHorse = (Horse) entity;
-
-		if ((MyConfig.isMustBeOwner()) && (!player.getUUID().equals(targetHorse.getOwnerUUID()))) {
-			return InteractionResult.PASS;
-		}
-
-		if ((MyConfig.isMustBeSaddled()) && !(targetHorse.isSaddled())) {
-			return InteractionResult.PASS;
-		}
 
 		targetHorse.ejectPassengers();
 		CompoundTag entityData = entity.serializeNBT();
@@ -76,6 +107,7 @@ public class HorsePouchItem extends Item {
 		entity.remove(RemovalReason.DISCARDED);
 
 		world.playSound(null, player.blockPosition(), SoundEvents.HORSE_ARMOR, SoundSource.PLAYERS, 1.0F, 1.0F);
+
 		return InteractionResult.CONSUME;
 
 	}
@@ -135,7 +167,7 @@ public class HorsePouchItem extends Item {
 					newEntityData.put("EntityTag", entityData);
 					Entity newEntity = entityType.create((ServerLevel) world, newEntityData, null, blockpos1, MobSpawnType.MOB_SUMMONED, false, false);
 					EntityType.updateCustomEntityTag(world, player, newEntity, newEntityData);
-					
+
 					// note: boolean returned by this is unreliable;
 					boolean bool = ((Level) world).addFreshEntity(newEntity);
 					itemStack.getOrCreateTag().remove("StoredEntityData");
@@ -174,7 +206,7 @@ public class HorsePouchItem extends Item {
 				newEntityData.put("EntityTag", entityData);
 				Entity newEntity = entityType.create((ServerLevel) world, newEntityData, null, blockpos, MobSpawnType.MOB_SUMMONED, false, false);
 				EntityType.updateCustomEntityTag(world, player, newEntity, newEntityData);
-				
+
 				// note: boolean returned by this is unreliable;
 				boolean bool = ((Level) world).addFreshEntity(newEntity);
 
