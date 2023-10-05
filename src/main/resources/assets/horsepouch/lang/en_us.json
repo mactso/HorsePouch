@@ -1,3 +1,5 @@
 {
-  "item.horsepouch.horse_pouch": "Horse Pouch"
+  "item.horsepouch.horse_pouch": "Horse Pouch",
+  	"advancements.horsepouch.title": "Like Any Normal Person!",
+	"advancements.horsepouch.description": "A pouch to store your horse."
 }
