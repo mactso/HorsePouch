@@ -1,10 +1,7 @@
 package com.mactso.horsepouch.config;
 
-import java.io.IOException;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 
 import com.mactso.horsepouch.Main;
 import com.mojang.datafixers.util.Pair;

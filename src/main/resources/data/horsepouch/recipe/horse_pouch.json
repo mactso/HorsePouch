@@ -1,5 +1,6 @@
 {
 	"type": "minecraft:crafting_shaped",
+	"category": "misc",
 	"pattern": [
 		"S#S",
 		"#D#",
@@ -17,6 +18,7 @@
 		}
 	},
 	"result": {
-		"item": "horsepouch:horse_pouch"
+		"count": 1,
+		"id": "horsepouch:horse_pouch"
 	}
 }
