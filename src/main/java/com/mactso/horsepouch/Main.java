@@ -1,9 +1,6 @@
 package com.mactso.horsepouch;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import com.mactso.horsepouch.config.MyConfig;
 import com.mactso.horsepouch.items.HorsePouchItem;
@@ -23,14 +20,13 @@ import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.RegisterEvent;
 
 @Mod("horsepouch")
 public class Main {
 
 	    public static final String MODID = "horsepouch"; 
-		private static final Logger LOGGER = LogManager.getLogger();
+		// private static final Logger LOGGER = LogManager.getLogger();
 	    
 	    public Main()
 	    {
@@ -44,7 +40,7 @@ public class Main {
 	    @SubscribeEvent
 	    public void SetupClient(FMLClientSetupEvent event) {
 	    	event.enqueueWork(()->
-	    	ItemProperties.register(ModItems.HORSE_POUCH, new ResourceLocation("horsepouch:full"), HorsePouchItem::bagModel)
+	    	ItemProperties.register(ModItems.HORSE_POUCH, ResourceLocation.parse("horsepouch:full"), HorsePouchItem::bagModel)
 	    	);
 	    }
 	    
@@ -55,9 +51,7 @@ public class Main {
 		    @SubscribeEvent
 		    public static void onRegister(final RegisterEvent event)
 		    {
-		    	@Nullable
-				IForgeRegistry<Object> fr = event.getForgeRegistry();
-		    	
+	    	
 		    	@NotNull
 				ResourceKey<? extends Registry<?>> key = event.getRegistryKey();
 
