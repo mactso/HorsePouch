@@ -5,30 +5,30 @@ import org.apache.logging.log4j.Logger;
 
 import com.mactso.horsepouch.config.MyConfig;
 
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.ChatFormatting;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.LivingEntity;
 
 public class Utility {
 	
 	private static final Logger LOGGER = LogManager.getLogger();
 	
-	public static void sendBoldChat(Player p, String chatMessage, ChatFormatting textColor) {
+	public static void sendBoldChat(ServerPlayer serverPlayer, String chatMessage, ChatFormatting textColor) {
 		MutableComponent component = Component.literal(chatMessage);
 		component.setStyle(component.getStyle().withBold(true));
 		component.setStyle(component.getStyle().withColor(textColor));
-		p.sendSystemMessage(component);
+		serverPlayer.sendSystemMessage(component);
 
 	}
 
-	public static void sendChat(Player p, String chatMessage, ChatFormatting textColor) {
+	public static void sendChat(ServerPlayer serverPlayer, String chatMessage, ChatFormatting textColor) {
 
 		MutableComponent component = Component.literal(chatMessage);
 		component.setStyle(component.getStyle().withColor(textColor));
-		p.sendSystemMessage(component);
+		serverPlayer.sendSystemMessage(component);
 
 	}
 	
