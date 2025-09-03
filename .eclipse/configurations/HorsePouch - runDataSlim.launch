@@ -3,10 +3,10 @@
   <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="HorsePouch"/>
   <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="net.minecraftforge.bootstrap.ForgeBootstrap"/>
   <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Dforge.logging.console.level=debug -Dforge.logging.markers=REGISTRIES -Djava.net.preferIPv6Addresses=system"/>
-  <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="--launchTarget forge_userdev_data --assetIndex 24 --assetsDir C:\Users\Mac\.gradle\caches\forge_gradle\assets --gameDir . --mod horsepouch --all --output C:\Workspaces\Minecraft\Forge\1.21.5\HorsePouch\HorsePouch\src\generated\resources --existing C:\Workspaces\Minecraft\Forge\1.21.5\HorsePouch\HorsePouch\src\main\resources"/>
-  <stringAttribute key="org.eclipse.jdt.launching.WORKING_DIRECTORY" value="C:\Workspaces\Minecraft\Forge\1.21.5\HorsePouch\HorsePouch\run-data"/>
+  <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="--launchTarget forge_userdev_data --assetIndex 19 --assetsDir C:\Users\Mac\.gradle\caches\forge_gradle\assets --gameDir . --mod horsepouch --all --output C:\Workspaces\Minecraft\Forge\1.21.4\HorsePouch\HorsePouch\src\generated\resources --existing C:\Workspaces\Minecraft\Forge\1.21.4\HorsePouch\HorsePouch\src\main\resources"/>
+  <stringAttribute key="org.eclipse.jdt.launching.WORKING_DIRECTORY" value="C:\Workspaces\Minecraft\Forge\1.21.4\HorsePouch\HorsePouch\run-data"/>
   <mapAttribute key="org.eclipse.debug.core.environmentVariables">
-    <mapEntry key="MOD_CLASSES" value="C:\Workspaces\Minecraft\Forge\1.21.5\HorsePouch\HorsePouch\bin\main;C:\Workspaces\Minecraft\Forge\1.21.5\HorsePouch\HorsePouch\bin\main"/>
-    <mapEntry key="MCP_MAPPINGS" value="official_1.21.5"/>
+    <mapEntry key="MOD_CLASSES" value="C:\Workspaces\Minecraft\Forge\1.21.4\HorsePouch\HorsePouch\bin\main;C:\Workspaces\Minecraft\Forge\1.21.4\HorsePouch\HorsePouch\bin\main"/>
+    <mapEntry key="MCP_MAPPINGS" value="official_1.21.4"/>
   </mapAttribute>
 </launchConfiguration>

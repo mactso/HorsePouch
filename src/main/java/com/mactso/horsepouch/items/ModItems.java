@@ -63,7 +63,7 @@ public class ModItems {
 
 		}
 	}
-
+	
 	@SuppressWarnings("unused")  // no blocks in this mod.
 	private static Item register(Block block, BiFunction<Block, Properties, Item> func, Properties prop)
 	{

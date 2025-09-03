@@ -1,12 +1,12 @@
 package com.mactso.horsepouch.items;
 
-import java.util.Optional;
-import java.util.function.Consumer;
+import java.util.List;
 
 import com.mactso.horsepouch.config.MyConfig;
 import com.mactso.horsepouch.utility.Utility;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.RegistryAccess;
@@ -31,16 +31,25 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.CustomData;
-import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.api.distmarker.Dist;
 
 public class HorsePouchItem extends Item {
 	// private static final Logger LOGGER = LogManager.getLogger();
 	public static final String STORED_ENTITY_DATA_TAG = "StoredEntityData";
 
-
+	// this method is only client side.
+	@OnlyIn(Dist.CLIENT)
+	public static float bagModel(ItemStack itemStackIn, ClientLevel level, LivingEntity le, int i) {
+		CustomData data = itemStackIn.get(DataComponents.CUSTOM_DATA);
+		if (data != null && data.contains(STORED_ENTITY_DATA_TAG)) {
+			return 1; // bag full of horse
+		}
+		return 0; // bag empty
+	}
 
 	public HorsePouchItem(Properties properties) {
 		super(properties);
@@ -49,47 +58,30 @@ public class HorsePouchItem extends Item {
 
 	@SuppressWarnings("deprecation")
 	@Override
-    public void appendHoverText(ItemStack itemStackIn, TooltipContext context, TooltipDisplay tooltipDisplay,
-            Consumer<Component> tooltipOutput, TooltipFlag tooltipFlag) {
+	public void appendHoverText(ItemStack itemStackIn, TooltipContext context, List<Component> tiplist,
+			TooltipFlag ttflag_) {
 		
 		CustomData data = itemStackIn.get(DataComponents.CUSTOM_DATA);
 		if (!holdsSteed(data)) {
-			tooltipOutput.accept(Component.literal("Not holding a steed."));
+			tiplist.add(Component.literal("Not holding a steed."));
 			return;
 		}
 
-		Optional<CompoundTag> optEntityData = data.getUnsafe().getCompound(STORED_ENTITY_DATA_TAG);
-		if (optEntityData.isEmpty()) {
-			tooltipOutput.accept(Component.literal("Not holding a steed."));
-			return;
-		}		
-		
-		CompoundTag entityData = optEntityData.get();
-		String idString = getOptionalStringOrBlank(entityData.getString("id"));
-		EntityType<?> entityType = EntityType.byString(idString).orElse(null);
+		CompoundTag entityData = data.getUnsafe().getCompound(STORED_ENTITY_DATA_TAG);
+		EntityType<?> entityType = EntityType.byString(entityData.getString("id")).orElse(null);
 		String description = entityType.builtInRegistryHolder().key().location().getPath();
 		MutableComponent bagTip = Component.literal("Holding a " + description + ".");
-		if (entityData.contains("CustomName")) {
+		if (entityData.contains("CustomName", 8)) {
 			MutableComponent name = Component.literal(" ?Name? ");
 			try {
-				name = Component.Serializer.fromJson(entityData.getString("CustomName").get(), RegistryAccess.EMPTY);
+				name = Component.Serializer.fromJson(entityData.getString("CustomName"), RegistryAccess.EMPTY);
 			} catch (Exception e) {
 				// failure to parse steed name isn't fatal.
 			}
 			bagTip = Component.literal("Holding a " + description + " named ");
 			bagTip.append(name);
 		}
-		tooltipOutput.accept(bagTip);
-
-}
-	
-
-
-	private String getOptionalStringOrBlank(Optional<String> optStringIn) {
-		if (optStringIn.isPresent()) {
-			return optStringIn.get();
-		}
-		return "";
+		tiplist.add(bagTip);
 	}
 
 	private void emptyTheHorsePouch(ItemStack itemStack) {
@@ -108,32 +100,24 @@ public class HorsePouchItem extends Item {
 		return blockpos1;
 	}
 
-	// NOTE:  "getUnsafe()" is returning a pointer- changing it changes the real data.
-	// 
-	@SuppressWarnings("deprecation")
 	private boolean holdsSteed(CustomData data) {
-		if (data != null && data.contains(STORED_ENTITY_DATA_TAG) && data.getUnsafe().getCompound(STORED_ENTITY_DATA_TAG).isPresent())
+		if (data != null && data.contains(STORED_ENTITY_DATA_TAG))
 			return true;
 		return false;
 	}
+
 	@Override
 	public InteractionResult interactLivingEntity(ItemStack itemStackIn, Player player, LivingEntity entity,
 			InteractionHand hand) {
 
-		Level world = player.level();
-
-		if (world.isClientSide) {
+		Level level = player.level();
+		
+		if (level.isClientSide()) {
 			return InteractionResult.SUCCESS;
 		}
 		
-
-		if (!(player instanceof ServerPlayer)) {
-			return InteractionResult.SUCCESS;
-		}
-	
-		ServerPlayer serverPlayer = (ServerPlayer) player;
-		ServerLevel serverLevel = serverPlayer.serverLevel();
-
+		ServerLevel serverLevel = (ServerLevel) player.level();
+		
 		if (!(entity instanceof AbstractHorse)) {
 			return InteractionResult.CONSUME;
 		}
@@ -156,13 +140,12 @@ public class HorsePouchItem extends Item {
 			return InteractionResult.CONSUME;
 		}
 
-		
-		if ((targetHorse.getOwner() != null) && (targetHorse.getOwner().getUUID() != null) && (MyConfig.isMustBeOwner())
-				&& (!player.getUUID().equals(targetHorse.getOwner().getUUID()))) {
+		if ((targetHorse.getOwnerUUID() != null) && (MyConfig.isMustBeOwner())
+				&& (!player.getUUID().equals(targetHorse.getOwnerUUID()))) {
 			return InteractionResult.CONSUME;
 		}
 
-		if ((isSaddleable(targetHorse)) && (MyConfig.isMustBeSaddled()) && !(targetHorse.isSaddled())) {
+		if ((targetHorse.isSaddleable()) && (MyConfig.isMustBeSaddled()) && !(targetHorse.isSaddled())) {
 			return InteractionResult.CONSUME;
 		}
 
@@ -180,26 +163,19 @@ public class HorsePouchItem extends Item {
 		});
 		entity.remove(RemovalReason.DISCARDED);
 
-		serverLevel.playSound(serverPlayer, serverPlayer.blockPosition(), SoundEvents.HORSE_ARMOR.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
+		serverLevel.playSound(player, player.blockPosition(), SoundEvents.HORSE_ARMOR.get(), SoundSource.PLAYERS);
 
 		return InteractionResult.CONSUME;
 
 	}
 
-	private boolean isSaddleable (AbstractHorse targetHorse) {
-
-	        return targetHorse.isAlive() && !targetHorse.isBaby() && targetHorse.isTamed();
-	}
-	
-	private void restoreTheSteed(Level level, BlockPos blockpos1, CompoundTag entityData, EntityType<?> entityType) {
-		Entity newEntity = entityType.create((ServerLevel) level, null, blockpos1, EntitySpawnReason.MOB_SUMMONED, false,
+	private void restoreTheSteed(ServerLevel serverLevel, BlockPos blockpos1, CompoundTag entityData, EntityType<?> entityType) {
+		Entity newEntity = entityType.create((ServerLevel) serverLevel, null, blockpos1, EntitySpawnReason.MOB_SUMMONED, false,
 				false);
-		EntityType.updateCustomEntityTag(level, null, newEntity, CustomData.of(entityData)); // New
+		EntityType.updateCustomEntityTag(serverLevel, null, newEntity, CustomData.of(entityData)); // New
 		
-		level.addFreshEntity(newEntity); // note: boolean returned by this is unreliable;
+		serverLevel.addFreshEntity(newEntity); // note: boolean returned by this is unreliable;
 	}
-
-
 
 	@SuppressWarnings("deprecation")
 	@Override
@@ -209,30 +185,23 @@ public class HorsePouchItem extends Item {
 
 		if (level.isClientSide())
 			return InteractionResult.CONSUME;
-//			return InteractionResult.consume(player.getItemInHand(hand));
 
-		if (!(player instanceof ServerPlayer)) {
-			return InteractionResult.CONSUME;
-		}
 	
-		ServerPlayer serverPlayer = (ServerPlayer) player;
-		ServerLevel serverLevel = serverPlayer.serverLevel();
-
-		
 		ItemStack itemStack = player.getItemInHand(hand);
 		CustomData data = itemStack.get(DataComponents.CUSTOM_DATA);
 		if (!holdsSteed(data))
 			return InteractionResult.CONSUME;
-//			return InteractionResultHolder.consume(player.getItemInHand(hand));
 
-		// TODO : Now Optional - may need to put in optional.isPresent() test 
-		CompoundTag entityData = data.getUnsafe().getCompound(STORED_ENTITY_DATA_TAG).get();
-		if (entityData.contains("id")) {
+		ServerLevel serverLevel = (ServerLevel) level;
+		ServerPlayer serverPlayer = (ServerPlayer) player;
+
+		CompoundTag entityData = data.getUnsafe().getCompound(STORED_ENTITY_DATA_TAG);
+		if (entityData.contains("id", 8)) {
 			Utility.debugMsg(1, "Restore Horse");
 			BlockPos blockpos = player.blockPosition();
-			EntityType<?> entityType = EntityType.byString(entityData.getString("id").get()).orElse(null);
+			EntityType<?> entityType = EntityType.byString(entityData.getString("id")).orElse(null);
 			if (entityType != null) {
-				restoreTheSteed(level, blockpos, entityData, entityType);
+				restoreTheSteed(serverLevel, blockpos, entityData, entityType);
 				emptyTheHorsePouch(itemStack);
 				Utility.sendChat(serverPlayer, "Your steed was restored where you are.", ChatFormatting.DARK_GREEN);
 				return InteractionResult.CONSUME;
@@ -243,35 +212,36 @@ public class HorsePouchItem extends Item {
 
 	}
 
-
 	@SuppressWarnings("deprecation")
 	@Override
 	public InteractionResult useOn(UseOnContext iuc) {
 
-		Level level = iuc.getLevel();
-		if (level.isClientSide()) {
+		if (iuc.getLevel().isClientSide()) {
 			return InteractionResult.CONSUME;
 		}
+		
+		
 
 		Utility.debugMsg(1, "Use HorsePouch to restore Steed on block player is looking at.");
 
-		Player player = iuc.getPlayer();
+		ServerPlayer serverPlayer = (ServerPlayer) iuc.getPlayer();
+		ServerLevel serverLevel = (ServerLevel) serverPlayer.serverLevel();
 		ItemStack itemStack = iuc.getItemInHand();
 		BlockPos blockpos = iuc.getClickedPos();
 		Direction direction = iuc.getClickedFace();
-		BlockState blockstate = level.getBlockState(blockpos);
-		BlockPos blockpos1 = getRestorePos(level, blockpos, direction, blockstate);
+		BlockState blockstate = serverLevel.getBlockState(blockpos);
+		BlockPos blockpos1 = getRestorePos(serverLevel, blockpos, direction, blockstate);
 
 		CustomData data = itemStack.get(DataComponents.CUSTOM_DATA);
 		if (!holdsSteed(data))
 			return InteractionResult.CONSUME;
-		CompoundTag entityData = data.getUnsafe().getCompound(STORED_ENTITY_DATA_TAG).get();
-		if (entityData.contains("id")) {
-			EntityType<?> entityType = EntityType.byString(entityData.getString("id").get()).orElse(null);
+		CompoundTag entityData = data.getUnsafe().getCompound(STORED_ENTITY_DATA_TAG);
+		if (entityData.contains("id", 8)) {
+			EntityType<?> entityType = EntityType.byString(entityData.getString("id")).orElse(null);
 			if (entityType != null) {
-				restoreTheSteed(level, blockpos1, entityData, entityType);
+				restoreTheSteed(serverLevel, blockpos1, entityData, entityType);
 				emptyTheHorsePouch(itemStack);
-				Utility.sendChat((ServerPlayer)player, "Your steed was restored nearby.", ChatFormatting.DARK_GREEN);
+				Utility.sendChat(serverPlayer, "Your steed was restored nearby.", ChatFormatting.DARK_GREEN);
 			}
 		}
 
