@@ -13,6 +13,7 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -70,12 +71,8 @@ public class HorsePouchItem extends Item {
 		String description = entityType.builtInRegistryHolder().key().location().getPath();
 		MutableComponent bagTip = Component.literal("Holding a " + description + ".");
 		if (entityData.contains("CustomName")) {
-			MutableComponent name = Component.literal(" ?Name? ");
-			try {
-				name = Component.Serializer.fromJson(entityData.getString("CustomName").get(), RegistryAccess.EMPTY);
-			} catch (Exception e) {
-				// failure to parse steed name isn't fatal.
-			}
+			int i = entityData.getId();
+			Component name = entityData.read("CustomName",ComponentSerialization.CODEC).orElse(Component.literal(" ?Name? "));
 			bagTip = Component.literal("Holding a " + description + " named ");
 			bagTip.append(name);
 		}
@@ -132,7 +129,7 @@ public class HorsePouchItem extends Item {
 		}
 	
 		ServerPlayer serverPlayer = (ServerPlayer) player;
-		ServerLevel serverLevel = serverPlayer.serverLevel();
+		ServerLevel serverLevel = serverPlayer.level();
 
 		if (!(entity instanceof AbstractHorse)) {
 			return InteractionResult.CONSUME;
@@ -216,7 +213,7 @@ public class HorsePouchItem extends Item {
 		}
 	
 		ServerPlayer serverPlayer = (ServerPlayer) player;
-		ServerLevel serverLevel = serverPlayer.serverLevel();
+		ServerLevel serverLevel = serverPlayer.level();
 
 		
 		ItemStack itemStack = player.getItemInHand(hand);
@@ -232,7 +229,7 @@ public class HorsePouchItem extends Item {
 			BlockPos blockpos = player.blockPosition();
 			EntityType<?> entityType = EntityType.byString(entityData.getString("id").get()).orElse(null);
 			if (entityType != null) {
-				restoreTheSteed(level, blockpos, entityData, entityType);
+				restoreTheSteed(serverLevel, blockpos, entityData, entityType);
 				emptyTheHorsePouch(itemStack);
 				Utility.sendChat(serverPlayer, "Your steed was restored where you are.", ChatFormatting.DARK_GREEN);
 				return InteractionResult.CONSUME;
