@@ -2,14 +2,9 @@ package com.mactso.horsepouch;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import com.mactso.horsepouch.config.MyConfig;
-import com.mactso.horsepouch.items.HorsePouchItem;
 import com.mactso.horsepouch.items.ModItems;
-
 import net.fabricmc.api.ModInitializer;
-import net.minecraft.client.renderer.item.ItemProperties;
-import net.minecraft.resources.ResourceLocation;
 
 public class Main implements ModInitializer {
 
@@ -17,10 +12,9 @@ public class Main implements ModInitializer {
 	private static final Logger LOGGER = LogManager.getLogger();
 
 	public void onInitialize() {
-		LOGGER.info("Registering" + MOD_ID + ".");
+		LOGGER.info("Registering " + MOD_ID + ".");
 		ModItems.register();
 		MyConfig.registerConfigs();
-
 
 	}
 

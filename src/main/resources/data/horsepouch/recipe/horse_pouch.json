@@ -7,15 +7,9 @@
 		"###"
 	],
 	"key": {
-		"D": {
-			"item": "minecraft:dispenser"
-		},
-		"S": {
-			"item": "minecraft:string"
-		},
-		"#": {
-			"item": "minecraft:leather"
-		}
+		"D": "minecraft:dispenser",
+		"S": "minecraft:string",
+		"#": "minecraft:leather"
 	},
 	"result": {
 		"count": 1,
